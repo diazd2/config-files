@@ -106,8 +106,8 @@ source ~/.bashrc
 npm install -g --prefix=$(npm config get prefix) bower grunt-cli less jscs jshint yo
 
 # If they clone the repo, copy it. If they just downloaded the script, attempt to grab it from github.
-[ -f .jshintrc ] && cp .jshintrc ~ || wget https://raw.githubusercontent.com/JonathanGawrych/Linux-up-to-speed/master/.jshintrc -P ~
-[ -f .jscsrc ] && cp .jscsrc ~ || wget https://raw.githubusercontent.com/JonathanGawrych/Linux-up-to-speed/master/.jscsrc -P ~
+[ -f .jshintrc ] && cp .jshintrc ~ || wget https://raw.githubusercontent.com/diazd2/config-files/master/.jshintrc -P ~
+[ -f .jscsrc ] && cp .jscsrc ~ || wget https://raw.githubusercontent.com/diazd2/config-files/master/.jscsrc -P ~
 git clone https://github.com/magicmonty/bash-git-prompt.git ~/.bash-git-prompt
 (cd ~/.bash-git-prompt && git reset --hard eb2554395c43287c1ada1544012106b61f8ce3c8)
 echo "source ~/.bash-git-prompt/gitprompt.sh" >> ~/.bashrc
