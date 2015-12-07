@@ -67,6 +67,10 @@ if [ "$sublime" == "Y" ]; then
 	sudo apt-get install -y sublime-text-installer
 	sudo mv /usr/bin/subl /usr/bin/sublime
 	wget https://sublime.wbond.net/Package%20Control.sublime-package -P ~/.config/sublime-text-3/Installed\ Packages
+	wget https://raw.githubusercontent.com/diazd2/config-files/master/Package%20Control.sublime-settings  -P ~/.config/sublime-text-3/Packages/User/
+	wget https://raw.githubusercontent.com/diazd2/config-files/master/Preferences.sublime-settings  -P ~/.config/sublime-text-3/Packages/User/
+	wget https://raw.githubusercontent.com/diazd2/config-files/master/Default%20(Linux).sublime-keymap  -P ~/.config/sublime-text-3/Packages/User/
+
 fi
 
 if [ "$nginx" == "Y" ]; then
