@@ -1,0 +1,31 @@
+{
+	"bootstrapped": true,
+	"in_process_packages":
+	[
+	],
+	"installed_packages":
+	[
+		"AngularJS",
+		"Color Highlighter",
+		"ColorPicker",
+		"Emmet",
+		"GenerateUUID",
+		"Jade",
+		"jQuery",
+		"JSHint",
+		"JSON Reindent",
+		"JSONLint",
+		"LESS",
+		"Material Theme",
+		"Nodejs",
+		"PackageResourceViewer",
+		"PlainTasks",
+		"Pretty JSON",
+		"SideBarEnhancements",
+		"SublimeCodeIntel",
+		"SublimeLinter",
+		"SublimeLinter-csslint",
+		"SublimeLinter-jshint",
+		"SublimeLinter-json"
+	]
+}
