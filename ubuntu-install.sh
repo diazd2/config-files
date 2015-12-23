@@ -96,7 +96,7 @@ fi
 curl -sL https://deb.nodesource.com/setup_0.12 | sudo bash -
 sudo apt-get install -y nodejs
 sudo apt-get install -y build-essential
-sudo apt-get install -y npm
+sudo npm install -g npm
 
 echo prefix = ~/.node >> ~/.npmrc
 echo 'export PATH=$PATH:$HOME/.node/bin' >> ~/.bashrc
