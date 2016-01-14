@@ -84,7 +84,6 @@ echo ""
 echo -e "${YELLOW}Now configuring nginx server...${NC}"
     HOMEPATH=~
     mkdir -p ~/.www
-    mkdir -p ~/.www/api
     echo "it works!" > ~/.www/index.html
 printf "server {
     listen 80;
