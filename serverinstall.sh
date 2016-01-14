@@ -49,17 +49,6 @@ if [ "$gitemail" == "" ]; then
     gitemail="git@thetessera.org"
 fi
 
-echo ""
-echo -e "${CYAN}-- OK. Script will use:"
-echo -e "${CYAN}domainname: ${NC}$domainname"
-echo -e "${CYAN}apiURL: ${NC}$apiURL"
-echo -e "${CYAN}dbusername: ${NC}$dbusername"
-echo -e "${CYAN}dbpassword: ${NC}$dbpassword"
-echo -e "${CYAN}gitname: ${NC}$gitname"
-echo -e "${CYAN}gitemail: ${NC}$gitemail"
-echo -e "${CYAN}-- Starting..."
-echo ""
-echo ""
 
 # APT-GET
 echo -e "${YELLOW}Let's begin. Updating sources...${NC}"
@@ -203,3 +192,19 @@ echo -e "${GREEN}Done! (clean up)${NC}"
 echo ""
 echo ""
 
+# SUMMARY
+echo ""
+echo -e "${YELLOW}OK. All done. Here is a summary:${NC}"
+echo -e "${CYAN}Domain Name: ${NC}$domainname"
+echo -e "${CYAN}API URL: ${NC}$apiURL"
+echo -e "${CYAN}nginx content folder: ${NC}~/.www"
+echo -e "${CYAN}DB Username: ${NC}$dbusername"
+echo -e "${CYAN}DB Password: ${NC}$dbpassword"
+echo -e "${CYAN}DBs: ${NC}dev, prod"
+echo -e "${CYAN}git name: ${NC}$gitname"
+echo -e "${CYAN}git e-mail: ${NC}$gitemail"
+echo -e "${CYAN}ssh public key: ${NC}~/.ssh/id_rsa.pub"
+echo ""
+echo ""
+echo -e "${YELLOW}To complete all changes and reload bash, please log out and in again.${NC}"
+echo ""
