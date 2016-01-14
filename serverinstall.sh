@@ -199,7 +199,7 @@ echo ""
 # AUTOREMOVE
 echo -e "${YELLOW}Cleaning up...${NC}"
 sudo apt-get -y autoremove
-echo -e "${GREEN}Done! (nginx)"
+echo -e "${GREEN}Done! (clean up)${NC}"
 echo ""
 echo ""
 
