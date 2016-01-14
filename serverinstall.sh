@@ -1,103 +1,153 @@
-#!/bin/bash
-if (( EUID == 0 )); then
-	echo "You must NOT be root to run this." 1>&2
-	echo "Why? Preferences are changed for the current user." 1>&2
-	echo "If ran as root, those changes will not take place for you, but for root instead." 1>&2
-	echo "Also, many files will be owned by root rather than you, messing up permissions." 1>&2
-	exit 1
+# COLORS
+RED='\033[0;31m'
+BLUE='\033[0;34m'
+GREEN='\033[0;32m'
+ORANGE='\033[0;33m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
+echo ""
+echo -e "${ORANGE}Server domain name [thetessera.org]:${NC} "
+read domainname
+if [ "$domainname" == "" ]; then
+    domainname="thetessera.org"
 fi
 
-# prevent root from creating ~/tmp/ by creating it ourself and cause permission problems
-# Make .node because in the later versions of npm, it's too stupid to make a folder anymore
-mkdir ~/tmp/ ~/.node/
-
 echo ""
-echo "Please enter your name (for git): "
-read name
-
-echo ""
-echo "Please enter your email (for git): "
-read email
-
-echo ""
-echo "Would you like to install nginx? (Y/n) "
-read nginx
-
-if [ -z "$nginx" ]; then
-	nginx="Y"
+echo -e "${ORANGE}API server proxy_pass URL [http://127.0.0.1:8000]:${NC} "
+read apiURL
+if [ "$apiURL" == "" ]; then
+    apiURL="http://127.0.0.1:8000"
 fi
-nginx="${nginx^^}" #toUpperCase
 
 echo ""
-echo "Would you like to install docker? (Y/n) "
-read docker
-
-if [ -z "$docker" ]; then
-	docker="Y"
+echo -e "${ORANGE}DB username [dbuser]:${NC} "
+read dbusername
+if [ "$dbusername" == "" ]; then
+    dbusername="dbuser"
 fi
-docker="${docker^^}" #toUpperCase
 
 echo ""
-echo "Would you like to install sublime? (Y/n) "
-read sublime
-
-if [ -z "$sublime" ]; then
-	sublime="Y"
+echo -e "${ORANGE}DB password for '$dbusername' [dbpassword]:${NC} "
+read dbpassword
+if [ "$dbpassword" == "" ]; then
+    dbpassword="dbpassword"
 fi
-sublime="${sublime^^}" #toUpperCase
 
-if [ "$sublime" == "Y" ]; then
-	defaulteditor="S"
+echo ""
+echo -e "${ORANGE}Name for git [Tessera]:${NC} "
+read gitname
+if [ "$gitname" == "" ]; then
+    gitname="Tessera"
+fi
+
+echo ""
+echo -e "${ORANGE}Email address for git [git@thetessera.org]:${NC} "
+read gitemail
+if [ "$gitemail" == "" ]; then
+    gitemail="git@thetessera.org"
+fi
+
+echo ""
+echo -e "${CYAN}-- OK. Script will use:"
+echo -e "${CYAN}domainname: ${NC}$domainname"
+echo -e "${CYAN}apiURL: ${NC}$apiURL"
+echo -e "${CYAN}dbusername: ${NC}$dbusername"
+echo -e "${CYAN}dbpassword: ${NC}$dbpassword"
+echo -e "${CYAN}gitname: ${NC}$gitname"
+echo -e "${CYAN}gitemail: ${NC}$gitemail"
+echo -e "${CYAN}-- Starting..."
+echo ""
+echo ""
+
+# APT-GET
+echo -e "${YELLOW}Let's begin. Updating sources...${NC}"
+echo ""
+echo -e "${CYAN}Adding apt keys and repos... ${NC}"
+    sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
+    printf "deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main" \
+     | sudo tee /etc/apt/sources.list.d/pgdg.list
+echo ""
+echo -e "${CYAN}Updating. Please wait... ${NC}"
+sudo apt-get -qq update
+
+# NODEJS
+echo -e "${YELLOW}Now installing node (v4.x)...${NC}"
+	curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -
+	sudo apt-get -qq install -y nodejs
+	sudo apt-get -qq install -y build-essential
+echo -e "${GREEN}Done! (node, nodejs)"
+echo ""
+echo ""
+
+
+# NGINX
+echo -e "${YELLOW}Now installing nginx...${NC}"
+	sudo apt-get -qq install -y nginx
+echo -e "${GREEN}Done! (nginx)"
+echo ""
+echo ""
+
+
+# NGINX CONFIG
+echo -e "${YELLOW}Now configuring nginx server...${NC}"
+    HOMEPATH=~
+    mkdir -p ~/.www
+    mkdir -p ~/.www/api
+    echo "it works!" > ~/.www/index.html
+printf "server {
+    listen 80;
+
+    server_name $domainname;
+
+    root $HOMEPATH/.www;
+    index index.html index.htm;
+
+    location /api/ {
+        proxy_pass $apiURL;
+    }
+}\n" | sudo tee /etc/nginx/sites-available/default
+echo -e "${CYAN}Restarting nginx... ${NC}"
+  sudo service nginx restart
+echo -e "${GREEN}Done! (nginx configuration)"
+echo ""
+echo ""
+
+
+
+# POSTGRESQL
+echo -e "${YELLOW}Now installing PostgreSQL...${NC}"
+    sudo apt-get -qq install -y python-software-properties \
+        software-properties-common \
+        postgresql-9.3 \
+        postgresql-client-9.3 \
+        postgresql-contrib-9.3
+echo -e "${CYAN}Creating initial databases and user... ${NC}"
+    sudo /etc/init.d/postgresql start
+    sudo -u postgres psql --command "CREATE USER $dbusername WITH SUPERUSER PASSWORD '$dbpassword';"
+if sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -w dev; then
+    echo "'dev' database already exists"
 else
-	defaulteditor="N"
+    sudo -u postgres createdb -O $dbusername dev
 fi
-
-defaulteditor="${defaulteditor^^}" #toUpperCase
-
-sudo apt-get install -y software-properties-common
-
-if [ "$sublime" == "Y" ]; then
-	sudo add-apt-repository -y ppa:webupd8team/sublime-text-3
+if sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -w prod; then
+    echo "'prod' database already exists"
+else
+    sudo -u postgres createdb -O $dbusername prod
 fi
+echo -e "${CYAN}Setting privileges... ${NC}"
+    echo "host    all    all    0.0.0.0/0    md5" \
+        | sudo tee --append /etc/postgresql/9.3/main/pg_hba.conf
+    echo "listen_addresses='*'" \
+        | sudo tee --append /etc/postgresql/9.3/main/postgresql.conf
+echo -e "${GREEN}Done! (PostgreSQL)"
+echo ""
+echo ""
 
-sudo apt-get update
-sudo apt-get install -y openjdk-8-jdk openjdk-8-source git gparted curl vim meld
-
-if [ "$sublime" == "Y" ]; then
-	sudo apt-get install -y sublime-text-installer
-	sudo mv /usr/bin/subl /usr/bin/sublime
-	wget https://sublime.wbond.net/Package%20Control.sublime-package -P ~/.config/sublime-text-3/Installed\ Packages
-	wget https://raw.githubusercontent.com/diazd2/config-files/master/Package%20Control.sublime-settings -P ~/.config/sublime-text-3/Packages/User/ -O Package\ Control.sublime-settings
-	wget https://raw.githubusercontent.com/diazd2/config-files/master/Preferences.sublime-settings -P ~/.config/sublime-text-3/Packages/User/ -O Preferences.sublime-settings
-	wget https://raw.githubusercontent.com/diazd2/config-files/master/Default%20\(Linux\).sublime-keymap -P ~/.config/sublime-text-3/Packages/User/ -O Default\ \(Linux\).sublime-keymap
-
-fi
-
-if [ "$nginx" == "Y" ]; then
-	sudo apt-get install -y nginx
-fi
-
-if [ "$docker" == "Y" ]; then
-	sudo apt-get install -y apt-transport-https
-	# Add Official Docker Repository to install docker as opposed to using official Ubuntu package
-	sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
-	sudo sh -c "echo deb https://get.docker.com/ubuntu docker main\
-	> /etc/apt/sources.list.d/docker.list"
-	sudo apt-get update
-	sudo apt-get install -y lxc-docker
-	# Configure Docker to be used without sudo
-	sudo groupadd docker
-	sudo gpasswd -a $USER docker
-	sudo service docker restart
-fi
-
-
-# nodejs (latest ver = 0.12)
-curl -sL https://deb.nodesource.com/setup_0.12 | sudo bash -
-sudo apt-get install -y nodejs
-sudo apt-get install -y build-essential
-sudo npm install -g npm
-
+# OTHERS
+echo -e "${YELLOW}Now installing other packages (git, gparted, curl, vim, meld, forever)...${NC}"
+sudo apt-get -qq intall -y git gparted curl vim meld
 echo prefix = ~/.node >> ~/.npmrc
 echo 'export PATH=$PATH:$HOME/.node/bin' >> ~/.bashrc
 echo 'export NODE_PATH=$NODE_PATH:$HOME/.node/lib/node_modules' >> ~/.bashrc
@@ -107,54 +157,48 @@ echo 'export NODE_PATH=$NODE_PATH:$HOME/.node/lib/node_modules' >> ~/.profile
 echo 'export PYTHONPATH=$PYTHONPATH:$HOME/.node/lib/node_modules' >> ~/.profile
 hash -r
 source ~/.bashrc
-npm install -g --prefix=$(npm config get prefix) bower grunt-cli less jscs jshint yo nodemon
+echo -e "${GREEN}Done! (others)"
+echo ""
+echo ""
 
-# If they clone the repo, copy it. If they just downloaded the script, attempt to grab it from github.
-[ -f .jshintrc ] && cp .jshintrc ~ || wget https://raw.githubusercontent.com/diazd2/config-files/master/.jshintrc -P ~
-[ -f .jscsrc ] && cp .jscsrc ~ || wget https://raw.githubusercontent.com/diazd2/config-files/master/.jscsrc -P ~
+echo -e "${YELLOW}Now extending ~/.bashrc...${NC}"
+npm install -g --prefix=$(npm config get prefix) forever
 git clone https://github.com/magicmonty/bash-git-prompt.git ~/.bash-git-prompt
 (cd ~/.bash-git-prompt && git reset --hard eb2554395c43287c1ada1544012106b61f8ce3c8)
 echo "source ~/.bash-git-prompt/gitprompt.sh" >> ~/.bashrc
+cp ~/.bash-git-prompt/git-prompt-colors.sh ~/.git-prompt-colors.sh
+sed -i -e 's/\xe2\x97\x8f/\xe2\x80\xa2/' -e 's/\xe2\x9c\x96/\xe2\x98\xa2\x20/' -e 's/\xe2\x9c\x9a/\xc2\xb1/' -e 's/\xe2\x9a\x91/\xe2\xad\x91/' -e 's/\xe2\x9a\x91/\xe2\xad\x91/' -e 's/\xe2\x86\x91\xc2\xb7/\xe2\x86\x91/' -e 's/\xe2\x86\x93\xc2\xb7/\xe2\x86\x93/' ~/.git-prompt-colors.sh
+printf '\n  GIT_PROMPT_START="$BoldBlue\w$ResetColor"\n  GIT_PROMPT_END=" $ "' >> ~/.git-prompt-colors.sh
+echo -e "${GREEN}Done! (extending bashrc)"
+echo ""
+echo ""
 
-gsettings set org.gnome.desktop.wm.preferences theme 'Ambiance'
-gsettings set org.gnome.desktop.interface gtk-theme 'Ambiance'
-gsettings set org.gnome.desktop.interface cursor-theme 'DMZ-White'
-gsettings set org.gnome.desktop.interface clock-format 12h
-gsettings set org.gnome.desktop.interface clock-show-date true
-gsettings set org.gnome.desktop.interface clock-show-seconds true
-gsettings set org.gnome.shell.calendar show-weekdate true
-gsettings set org.gnome.shell.overrides button-layout ':minimize,maximize,close'
-gsettings set org.gnome.shell.overrides workspaces-only-on-primary false
-gsettings set org.gnome.gedit.preferences.ui notebook-show-tabs-mode 'auto'
-gsettings set org.gnome.gedit.preferences.editor display-line-numbers true
-gsettings set org.gnome.gedit.preferences.editor wrap-mode 'none'
-gsettings set org.gnome.gedit.preferences.editor tabs-size 4
-gsettings set org.gnome.gedit.preferences.editor create-backup-copy false
-gsettings set org.gnome.nautilus.preferences enable-interactive-search true
-gsettings set org.gnome.settings-daemon.plugins.xsettings overrides "{'Gtk/EnablePrimaryPaste': <0>}"
-gsettings set org.gnome.desktop.input-sources xkb-options "['terminate:ctrl_alt_bksp']"
 
+echo -e "${YELLOW}Now configuring git...${NC}"
 git config --global merge.tool meld
 git config --global mergetool.keepBackup false
 git config --global diff.tool meld
 git config --global --add color.ui true
 git config --global push.default simple
-git config --global user.email "$email"
-git config --global user.name "$name"
+git config --global user.email "$gitemail"
+git config --global user.name "$gitname"
 git config --global core.pager 'less -x5,9'
 git config --global pull.ff only
+echo -e "${GREEN}Done! (configuring git)"
+echo ""
+echo ""
 
-if [ "$defaulteditor" == "S" ]; then
-	git config --global core.editor "sublime -wn"
-fi
-
-# generate and save ssh public key
+echo -e "${YELLOW}Generating public SSH key...${NC}"
 ssh-keygen -t rsa -b 2048 -C "$email" -N "" -f ~/.ssh/id_rsa
+echo -e "${GREEN}Done! (generating SSH key)"
+echo ""
+echo ""
 
-cp ~/.bash-git-prompt/git-prompt-colors.sh ~/.git-prompt-colors.sh
-sed -i -e 's/\xe2\x97\x8f/\xe2\x80\xa2/' -e 's/\xe2\x9c\x96/\xe2\x98\xa2\x20/' -e 's/\xe2\x9c\x9a/\xc2\xb1/' -e 's/\xe2\x9a\x91/\xe2\xad\x91/' -e 's/\xe2\x9a\x91/\xe2\xad\x91/' -e 's/\xe2\x86\x91\xc2\xb7/\xe2\x86\x91/' -e 's/\xe2\x86\x93\xc2\xb7/\xe2\x86\x93/' ~/.git-prompt-colors.sh
-printf '\n  GIT_PROMPT_START="$BoldBlue\w$ResetColor"\n  GIT_PROMPT_END=" $ "' >> ~/.git-prompt-colors.sh
 
-if [ "$docker" == "Y" ]; then
-	echo "Script Complete. Please log out and log back in to finish Docker configuration."
-fi
+# AUTOREMOVE
+echo -e "${YELLOW}Cleaning up...${NC}"
+sudo apt-get -y autoremove
+echo -e "${GREEN}Done! (nginx)"
+echo ""
+echo ""
+
