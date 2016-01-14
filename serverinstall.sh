@@ -71,6 +71,7 @@ echo -e "${CYAN}Adding apt keys and repos... ${NC}"
 echo ""
 echo -e "${CYAN}Updating. Please wait... ${NC}"
 sudo apt-get -qq update
+sudo apt-get -qq install -y curl
 
 # NODEJS
 echo -e "${YELLOW}Now installing node (v4.x)...${NC}"
@@ -146,8 +147,8 @@ echo ""
 echo ""
 
 # OTHERS
-echo -e "${YELLOW}Now installing other packages (git, gparted, curl, vim, meld, forever)...${NC}"
-sudo apt-get -qq intall -y git gparted curl vim meld
+echo -e "${YELLOW}Now installing other packages (git, gparted, vim, meld, forever)...${NC}"
+sudo apt-get -qq intall -y git gparted vim meld
 echo prefix = ~/.node >> ~/.npmrc
 echo 'export PATH=$PATH:$HOME/.node/bin' >> ~/.bashrc
 echo 'export NODE_PATH=$NODE_PATH:$HOME/.node/lib/node_modules' >> ~/.bashrc
