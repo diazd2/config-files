@@ -15,10 +15,10 @@ if [ "$domainname" == "" ]; then
 fi
 
 echo ""
-echo -e "${ORANGE}API server proxy_pass URL [http://127.0.0.1:8000]:${NC} "
+echo -e "${ORANGE}API server proxy_pass URL [http://127.0.0.1:8000/]:${NC} "
 read apiURL
 if [ "$apiURL" == "" ]; then
-    apiURL="http://127.0.0.1:8000"
+    apiURL="http://127.0.0.1:8000/"
 fi
 
 echo ""
@@ -93,8 +93,18 @@ printf "server {
     root $HOMEPATH/.www;
     index index.html index.htm;
 
+    location / {
+        try_files \$uri \$uri/ =404;
+    }
+
     location /api/ {
         proxy_pass $apiURL;
+    }
+
+    location /socket.io/ {
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection \"upgrade\";
+        proxy_pass ${apiURL}socket.io/;
     }
 }\n" | sudo tee /etc/nginx/sites-available/default
 echo -e "${CYAN}Restarting nginx... ${NC}"
@@ -195,11 +205,16 @@ echo ""
 echo ""
 echo -e "${YELLOW}OK. All done. Here is a summary:${NC}"
 echo -e "${CYAN}Domain Name: ${NC}$domainname"
-echo -e "${CYAN}API URL: ${NC}$apiURL"
+echo -e "${CYAN}API URL: ${NC}http://${domainname}/api/"
+echo -e "${CYAN}Websockets Server: ${NC}ws://${domainname}/socket.io/"
+echo -e "${CYAN}Websockets js file: ${NC}http://${domainname}/socket.io/socket.io.js"
 echo -e "${CYAN}nginx content folder: ${NC}~/.www"
+echo -e "${CYAN}nginx content folder: ${NC}~/.www"
+echo ""
 echo -e "${CYAN}DB Username: ${NC}$dbusername"
 echo -e "${CYAN}DB Password: ${NC}$dbpassword"
 echo -e "${CYAN}DBs: ${NC}dev, prod"
+echo ""
 echo -e "${CYAN}git name: ${NC}$gitname"
 echo -e "${CYAN}git e-mail: ${NC}$gitemail"
 echo -e "${CYAN}ssh public key: ${NC}~/.ssh/id_rsa.pub"
