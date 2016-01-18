@@ -59,8 +59,13 @@ echo -e "${CYAN}Adding apt keys and repos... ${NC}"
      | sudo tee /etc/apt/sources.list.d/pgdg.list
 echo ""
 echo -e "${CYAN}Updating. Please wait... ${NC}"
-sudo apt-get -qq update
+sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) universe"
+sudo dpkg --configure -a && sudo apt-get -qq update && sudo apt-get -y upgrade
 sudo apt-get -qq install -y curl
+sudo apt-get -qq install -y software-properties-common
+echo -e "${GREEN}Done! (node, nodejs)"
+echo ""
+echo ""
 
 # NODEJS
 echo -e "${YELLOW}Now installing node (v4.x)...${NC}"
