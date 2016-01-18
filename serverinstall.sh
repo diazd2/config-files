@@ -70,6 +70,7 @@ echo ""
 # NODEJS
 echo -e "${YELLOW}Now installing node (v4.x)...${NC}"
 	curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -
+	sudo dpkg --configure -a && sudo apt-get -qq update && sudo apt-get -y upgrade
 	sudo apt-get -qq install -y nodejs
 	sudo apt-get -qq install -y build-essential
 echo -e "${GREEN}Done! (node, nodejs)"
