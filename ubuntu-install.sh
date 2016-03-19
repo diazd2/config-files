@@ -93,10 +93,10 @@ fi
 
 
 # nodejs (latest ver = 0.12)
-curl -sL https://deb.nodesource.com/setup_0.12 | sudo bash -
-sudo apt-get install -y nodejs
-sudo apt-get install -y build-essential
-sudo npm install -g npm
+curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -
+sudo dpkg --configure -a && sudo apt-get -qq update && sudo apt-get -y upgrade
+sudo apt-get -qq install -y nodejs
+sudo apt-get -qq install -y build-essential
 
 echo prefix = ~/.node >> ~/.npmrc
 echo 'export PATH=$PATH:$HOME/.node/bin' >> ~/.bashrc
