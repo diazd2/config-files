@@ -61,7 +61,7 @@ if [ "$sublime" == "Y" ]; then
 fi
 
 sudo apt-get update
-sudo apt-get install -y openjdk-7-jdk openjdk-7-source git gparted curl vim meld
+sudo apt-get install -y openjdk-8-jdk openjdk-8-source git gparted curl vim meld
 
 if [ "$sublime" == "Y" ]; then
 	sudo apt-get install -y sublime-text-installer
