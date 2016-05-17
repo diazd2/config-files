@@ -107,7 +107,7 @@ echo 'export NODE_PATH=$NODE_PATH:$HOME/.node/lib/node_modules' >> ~/.profile
 echo 'export PYTHONPATH=$PYTHONPATH:$HOME/.node/lib/node_modules' >> ~/.profile
 hash -r
 source ~/.bashrc
-npm install -g --prefix=$(npm config get prefix) bower grunt-cli less jscs jshint yo nodemon
+npm install -g --prefix=$(npm config get prefix) bower grunt-cli less jscs jshint yo pm2
 
 # If they clone the repo, copy it. If they just downloaded the script, attempt to grab it from github.
 [ -f .jshintrc ] && cp .jshintrc ~ || wget https://raw.githubusercontent.com/diazd2/config-files/master/.jshintrc -P ~
