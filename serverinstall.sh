@@ -167,7 +167,7 @@ echo ""
 echo ""
 
 echo -e "${YELLOW}Now extending ~/.bashrc...${NC}"
-npm install -g --prefix=$(npm config get prefix) forever
+npm install -g --prefix=$(npm config get prefix) pm2
 git clone https://github.com/magicmonty/bash-git-prompt.git ~/.bash-git-prompt
 (cd ~/.bash-git-prompt && git reset --hard eb2554395c43287c1ada1544012106b61f8ce3c8)
 echo "source ~/.bash-git-prompt/gitprompt.sh" >> ~/.bashrc
